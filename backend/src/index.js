@@ -65,9 +65,13 @@ app.use((err, _req, res, _next) => {
 const server = http.createServer(app);
 
 // Initialize WebSocket on the same HTTP server
+console.log('Initializing WebSocket...');
 initWebSocket(server);
+console.log('WebSocket initialized');
 
+console.log(`Attempting to bind to port ${config.port}...`);
 server.listen(config.port, '0.0.0.0', () => {
+    console.log('Server bind successful');
     logger.info(`Server listening on port ${config.port} (0.0.0.0)`);
     logger.info(`WebSocket ready at ws://localhost:${config.port}/ws`);
     logger.info(`Environment: ${config.nodeEnv}`);
