@@ -78,6 +78,17 @@ server.on('error', (error) => {
     }
 });
 
+// Capture termination signals to understand WHY it stops
+['SIGINT', 'SIGTERM', 'SIGQUIT'].forEach(signal => {
+    process.on(signal, () => {
+        console.error(`[DEBUG] Received ${signal} signal. Shutting down...`);
+        server.close(() => {
+            console.error('[DEBUG] Server closed.');
+            process.exit(0);
+        });
+    });
+});
+
 console.log(`[DEBUG] Starting server on port: ${config.port}`);
 try {
     server.listen(config.port, () => {
@@ -85,22 +96,24 @@ try {
         logger.info(`Server listening on port ${config.port}`);
         logger.info(`Environment: ${config.nodeEnv}`);
 
-        // Initialize WebSocket AFTER server is listening to avoid race conditions
-        try {
-            console.log('Initializing WebSocket...');
-            initWebSocket(server);
-            console.log('WebSocket initialized');
-            logger.info(`WebSocket ready at ws://localhost:${config.port}/ws`);
-        } catch (err) {
-            console.error('CRITICAL: WebSocket initialization failed', err);
-        }
+        // Initialize WebSocket with DELAY to isolate startup issues
+        setTimeout(() => {
+            try {
+                console.log('Initializing WebSocket (Delayed)...');
+                initWebSocket(server);
+                console.log('WebSocket initialized');
+                logger.info(`WebSocket ready at ws://localhost:${config.port}/ws`);
+            } catch (err) {
+                console.error('CRITICAL: WebSocket initialization failed', err);
+            }
+        }, 5000);
     });
 } catch (error) {
     console.error('[FATAL] Failed to start server:', error);
     process.exit(1);
 }
 
-// Global error handlers to prevent silent crashes
+// Global error handlers...
 process.on('uncaughtException', (err) => {
     console.error('CRITICAL: Uncaught Exception:', err);
     if (logger) logger.error('CRITICAL: Uncaught Exception', { error: err.message, stack: err.stack });
