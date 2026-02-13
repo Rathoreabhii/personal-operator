@@ -24,6 +24,7 @@ import com.evo.operator.security.SecureStorage
 import com.evo.operator.service.OperatorForegroundService
 import com.evo.operator.ui.overlay.ConfirmationPanel
 import com.evo.operator.ui.screens.DashboardScreen
+import com.evo.operator.ui.screens.SettingsDialog
 import com.google.gson.Gson
 
 /**
@@ -76,6 +77,8 @@ class MainActivity : ComponentActivity() {
             MaterialTheme(
                 colorScheme = darkColorScheme()
             ) {
+                var showSettings by remember { mutableStateOf(false) }
+
                 Box(modifier = Modifier.fillMaxSize()) {
                     DashboardScreen(
                         isConnected = _isConnected.value,
@@ -100,7 +103,7 @@ class MainActivity : ComponentActivity() {
                             secureStorage.autoSuggestEnabled = enabled
                         },
                         onOpenSettings = {
-                            // Navigate to settings (implement settings screen)
+                            showSettings = true
                         }
                     )
 
@@ -131,6 +134,26 @@ class MainActivity : ComponentActivity() {
                             onDismiss = {
                                 _showConfirmation.value = false
                             }
+                        )
+                    }
+
+                    // Settings dialog
+                    if (showSettings) {
+                        SettingsDialog(
+                            currentServerUrl = secureStorage.serverUrl,
+                            currentApiKey = secureStorage.apiKey,
+                            currentPhoneNumber = secureStorage.userPhoneNumber,
+                            onSave = { serverUrl, apiKey, phoneNumber ->
+                                secureStorage.serverUrl = serverUrl
+                                secureStorage.apiKey = apiKey
+                                secureStorage.userPhoneNumber = phoneNumber
+                                showSettings = false
+                                // Restart service to apply new settings
+                                OperatorForegroundService.stop(this@MainActivity)
+                                OperatorForegroundService.start(this@MainActivity)
+                                Toast.makeText(this@MainActivity, "Settings saved! Reconnecting...", Toast.LENGTH_SHORT).show()
+                            },
+                            onDismiss = { showSettings = false }
                         )
                     }
                 }

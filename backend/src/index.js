@@ -67,10 +67,22 @@ const server = http.createServer(app);
 // Initialize WebSocket on the same HTTP server
 initWebSocket(server);
 
-server.listen(config.port, () => {
-    logger.info(`Server listening on port ${config.port}`);
+server.listen(config.port, '0.0.0.0', () => {
+    logger.info(`Server listening on port ${config.port} (0.0.0.0)`);
     logger.info(`WebSocket ready at ws://localhost:${config.port}/ws`);
     logger.info(`Environment: ${config.nodeEnv}`);
+});
+
+// Global error handlers to prevent silent crashes
+process.on('uncaughtException', (err) => {
+    console.error('CRITICAL: Uncaught Exception:', err);
+    if (logger) logger.error('CRITICAL: Uncaught Exception', { error: err.message, stack: err.stack });
+    process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('CRITICAL: Unhandled Rejection at:', promise, 'reason:', reason);
+    if (logger) logger.error('CRITICAL: Unhandled Rejection', { reason: reason?.toString() });
 });
 
 module.exports = { app, server };

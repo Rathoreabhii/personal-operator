@@ -147,7 +147,7 @@ fun ConfirmationPanel(
                             fontSize = 12.sp
                         )
                         LinearProgressIndicator(
-                            progress = { currentPlan.confidence.toFloat() },
+                            progress = currentPlan.confidence.toFloat(),
                             modifier = Modifier
                                 .weight(1f)
                                 .height(6.dp)

@@ -120,7 +120,7 @@ fun DashboardScreen(
                             onToggle = onToggleCommandMode
                         )
 
-                        HorizontalDivider(
+                        Divider(
                             color = Color(0xFF334155),
                             modifier = Modifier.padding(vertical = 8.dp)
                         )
