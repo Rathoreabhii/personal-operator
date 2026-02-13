@@ -9,7 +9,13 @@ const { summarizeCall } = require('../services/callSummarizer');
 const { apiKeyAuth, messageRateLimiter } = require('../middleware/security');
 const { auditLog } = require('../middleware/auditLogger');
 
-// All routes require API key auth
+// ─── Health check ──────────────────────────────────────────────────
+// This must be ABOVE the apiKeyAuth middleware for Railway to monitor it
+router.get('/health', (_req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// All routes below require API key auth
 router.use(apiKeyAuth);
 
 // ─── POST /api/process-message ─────────────────────────────────────
@@ -227,9 +233,5 @@ router.post('/call/:id/summarize', async (req, res) => {
     }
 });
 
-// ─── Health check ──────────────────────────────────────────────────
-router.get('/health', (_req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
 
 module.exports = router;
