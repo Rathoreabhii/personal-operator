@@ -71,33 +71,34 @@ app.use((err, _req, res, _next) => {
 const server = http.createServer(app);
 
 // Initialize WebSocket on the same HTTP server
-console.log(`Starting server on port: ${config.port}`);
-server.listen(config.port, '0.0.0.0', () => {
-    console.log('Server bind successful');
-    logger.info(`Server listening on port ${config.port} (0.0.0.0)`);
-    logger.info(`Environment: ${config.nodeEnv}`);
+console.error(`[DEBUG] Starting server on port: ${config.port}`);
+try {
+    server.listen(config.port, '0.0.0.0', () => {
+        console.error('[DEBUG] Server bind successful - Callback fired');
+        logger.info(`Server listening on port ${config.port} (0.0.0.0)`);
+        logger.info(`Environment: ${config.nodeEnv}`);
 
-    // Initialize WebSocket AFTER server is listening to avoid race conditions
-    try {
-        console.log('Initializing WebSocket...');
-        initWebSocket(server);
-        console.log('WebSocket initialized');
-        logger.info(`WebSocket ready at ws://localhost:${config.port}/ws`);
-    } catch (err) {
-        console.error('CRITICAL: WebSocket initialization failed', err);
-    }
-});
+        // Initialize WebSocket AFTER server is listening to avoid race conditions
+        try {
+            console.log('Initializing WebSocket...');
+            initWebSocket(server);
+            console.log('WebSocket initialized');
+            logger.info(`WebSocket ready at ws://localhost:${config.port}/ws`);
+        } catch (err) {
+            console.error('CRITICAL: WebSocket initialization failed', err);
+        }
+    });
 
-// Global error handlers to prevent silent crashes
-process.on('uncaughtException', (err) => {
-    console.error('CRITICAL: Uncaught Exception:', err);
-    if (logger) logger.error('CRITICAL: Uncaught Exception', { error: err.message, stack: err.stack });
-    process.exit(1);
-});
+    // Global error handlers to prevent silent crashes
+    process.on('uncaughtException', (err) => {
+        console.error('CRITICAL: Uncaught Exception:', err);
+        if (logger) logger.error('CRITICAL: Uncaught Exception', { error: err.message, stack: err.stack });
+        process.exit(1);
+    });
 
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('CRITICAL: Unhandled Rejection at:', promise, 'reason:', reason);
-    if (logger) logger.error('CRITICAL: Unhandled Rejection', { reason: reason?.toString() });
-});
+    process.on('unhandledRejection', (reason, promise) => {
+        console.error('CRITICAL: Unhandled Rejection at:', promise, 'reason:', reason);
+        if (logger) logger.error('CRITICAL: Unhandled Rejection', { reason: reason?.toString() });
+    });
 
-module.exports = { app, server };
+    module.exports = { app, server };
