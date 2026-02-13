@@ -80,8 +80,8 @@ server.listen(config.port, '0.0.0.0', () => {
     // Initialize WebSocket AFTER server is listening to avoid race conditions
     try {
         console.log('Initializing WebSocket...');
-        initWebSocket(server);
-        console.log('WebSocket initialized');
+        // initWebSocket(server);
+        console.log('WebSocket initialized (DISABLED FOR DEBUGGING)');
         logger.info(`WebSocket ready at ws://localhost:${config.port}/ws`);
     } catch (err) {
         console.error('CRITICAL: WebSocket initialization failed', err);
