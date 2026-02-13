@@ -88,17 +88,21 @@ try {
             console.error('CRITICAL: WebSocket initialization failed', err);
         }
     });
+} catch (error) {
+    console.error('[FATAL] Failed to start server:', error);
+    process.exit(1);
+}
 
-    // Global error handlers to prevent silent crashes
-    process.on('uncaughtException', (err) => {
-        console.error('CRITICAL: Uncaught Exception:', err);
-        if (logger) logger.error('CRITICAL: Uncaught Exception', { error: err.message, stack: err.stack });
-        process.exit(1);
-    });
+// Global error handlers to prevent silent crashes
+process.on('uncaughtException', (err) => {
+    console.error('CRITICAL: Uncaught Exception:', err);
+    if (logger) logger.error('CRITICAL: Uncaught Exception', { error: err.message, stack: err.stack });
+    process.exit(1);
+});
 
-    process.on('unhandledRejection', (reason, promise) => {
-        console.error('CRITICAL: Unhandled Rejection at:', promise, 'reason:', reason);
-        if (logger) logger.error('CRITICAL: Unhandled Rejection', { reason: reason?.toString() });
-    });
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('CRITICAL: Unhandled Rejection at:', promise, 'reason:', reason);
+    if (logger) logger.error('CRITICAL: Unhandled Rejection', { reason: reason?.toString() });
+});
 
-    module.exports = { app, server };
+module.exports = { app, server };
