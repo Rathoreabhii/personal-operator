@@ -32,7 +32,13 @@ app.use(requestLogger);
 // ── API routes ──
 app.use('/api', apiRoutes);
 
-// ── Root ──
+// ─── Health check (root) ──
+app.get('/health', (_req, res) => {
+    console.log('Health check ping received at /health');
+    res.json({ status: 'ok', root: true, timestamp: new Date().toISOString() });
+});
+
+// ─── Root ──
 app.get('/', (_req, res) => {
     res.json({
         service: 'Personal Operator Backend',
