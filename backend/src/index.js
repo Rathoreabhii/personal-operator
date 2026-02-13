@@ -74,15 +74,14 @@ const server = http.createServer(app);
 server.on('error', (error) => {
     console.error('[FATAL] Server encountered an error:', error);
     if (error.code === 'EADDRINUSE') {
-        console.error(`[FATAL] Port ${config.port} is already in use`);
+        process.exit(1);
     }
-    process.exit(1);
 });
 
-console.error(`[DEBUG] Starting server on port: ${config.port}`);
+console.log(`[DEBUG] Starting server on port: ${config.port}`);
 try {
     server.listen(config.port, '0.0.0.0', () => {
-        console.error('[DEBUG] Server bind successful - Callback fired');
+        console.log('[DEBUG] Server bind successful - Callback fired');
         logger.info(`Server listening on port ${config.port} (0.0.0.0)`);
         logger.info(`Environment: ${config.nodeEnv}`);
 
