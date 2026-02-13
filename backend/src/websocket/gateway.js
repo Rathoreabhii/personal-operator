@@ -16,7 +16,9 @@ const authenticatedClients = new Map();
  * @param {import('http').Server} server
  */
 function initWebSocket(server) {
+    console.log('gateway.js: Creating WebSocketServer instance...');
     const wss = new WebSocketServer({ server, path: '/ws' });
+    console.log('gateway.js: WebSocketServer created');
 
     wss.on('connection', (ws, req) => {
         const clientIp = req.socket.remoteAddress;
