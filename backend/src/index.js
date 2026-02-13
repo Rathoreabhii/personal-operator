@@ -71,6 +71,14 @@ app.use((err, _req, res, _next) => {
 const server = http.createServer(app);
 
 // Initialize WebSocket on the same HTTP server
+server.on('error', (error) => {
+    console.error('[FATAL] Server encountered an error:', error);
+    if (error.code === 'EADDRINUSE') {
+        console.error(`[FATAL] Port ${config.port} is already in use`);
+    }
+    process.exit(1);
+});
+
 console.error(`[DEBUG] Starting server on port: ${config.port}`);
 try {
     server.listen(config.port, '0.0.0.0', () => {
