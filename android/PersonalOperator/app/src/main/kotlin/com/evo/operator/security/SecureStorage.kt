@@ -39,7 +39,7 @@ class SecureStorage(context: Context) {
 
     // ── Server URL ──
     var serverUrl: String
-        get() = prefs.getString(KEY_SERVER_URL, "ws://10.0.2.2:3000/ws") ?: "ws://10.0.2.2:3000/ws"
+        get() = prefs.getString(KEY_SERVER_URL, "wss://api.veloe.in/ws") ?: "wss://api.veloe.in/ws"
         set(value) = prefs.edit().putString(KEY_SERVER_URL, value).apply()
 
     // ── User's own phone number (to detect self-messages) ──
