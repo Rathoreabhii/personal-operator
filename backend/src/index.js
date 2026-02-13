@@ -80,9 +80,9 @@ server.on('error', (error) => {
 
 console.log(`[DEBUG] Starting server on port: ${config.port}`);
 try {
-    server.listen(config.port, '0.0.0.0', () => {
+    server.listen(config.port, () => {
         console.log('[DEBUG] Server bind successful - Callback fired');
-        logger.info(`Server listening on port ${config.port} (0.0.0.0)`);
+        logger.info(`Server listening on port ${config.port}`);
         logger.info(`Environment: ${config.nodeEnv}`);
 
         // Initialize WebSocket AFTER server is listening to avoid race conditions
