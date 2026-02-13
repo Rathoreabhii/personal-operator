@@ -1,0 +1,19 @@
+# Node.js
+backend/node_modules/
+backend/.env
+backend/logs/
+backend/*.log
+
+# Android
+android/PersonalOperator/.gradle/
+android/PersonalOperator/build/
+android/PersonalOperator/*/build/
+android/PersonalOperator/local.properties
+android/PersonalOperator/*.iml
+android/PersonalOperator/.idea/workspace.xml
+android/PersonalOperator/.idea/libraries/
+
+# System
+.DS_Store
+Thumbs.db
+.gemini/
