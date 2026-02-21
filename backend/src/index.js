@@ -56,6 +56,15 @@ app.get('/', (_req, res) => {
     });
 });
 
+// ── WebSocket info (for non-upgrade GET requests to /ws) ──
+app.get('/ws', (_req, res) => {
+    res.json({
+        message: 'WebSocket endpoint — use ws:// or wss:// protocol to connect',
+        path: '/ws',
+        status: 'ready',
+    });
+});
+
 // ── 404 ──
 app.use((_req, res) => {
     res.status(404).json({ error: 'Not found' });
@@ -89,24 +98,22 @@ server.on('error', (error) => {
     });
 });
 
+// Initialize WebSocket BEFORE server.listen so upgrade handler is ready
+console.log('[DEBUG] Initializing WebSocket...');
+try {
+    initWebSocket(server);
+    console.log('[DEBUG] WebSocket initialized successfully');
+} catch (err) {
+    console.error('CRITICAL: WebSocket initialization failed', err);
+}
+
 console.log(`[DEBUG] Starting server on port: ${config.port}`);
 try {
     server.listen(config.port, () => {
         console.log('[DEBUG] Server bind successful - Callback fired');
         logger.info(`Server listening on port ${config.port}`);
         logger.info(`Environment: ${config.nodeEnv}`);
-
-        // Initialize WebSocket with DELAY to isolate startup issues
-        setTimeout(() => {
-            try {
-                console.log('Initializing WebSocket (Delayed)...');
-                initWebSocket(server);
-                console.log('WebSocket initialized');
-                logger.info(`WebSocket ready at ws://localhost:${config.port}/ws`);
-            } catch (err) {
-                console.error('CRITICAL: WebSocket initialization failed', err);
-            }
-        }, 5000);
+        logger.info(`WebSocket ready at ws://localhost:${config.port}/ws`);
     });
 } catch (error) {
     console.error('[FATAL] Failed to start server:', error);

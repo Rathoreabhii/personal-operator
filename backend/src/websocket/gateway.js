@@ -16,9 +16,25 @@ const authenticatedClients = new Map();
  * @param {import('http').Server} server
  */
 function initWebSocket(server) {
-    console.log('gateway.js: Creating WebSocketServer instance...');
-    const wss = new WebSocketServer({ server, path: '/ws' });
+    console.log('gateway.js: Creating WebSocketServer instance (noServer mode)...');
+    const wss = new WebSocketServer({ noServer: true });
     console.log('gateway.js: WebSocketServer created');
+
+    // Manually handle the HTTP upgrade event for /ws path
+    server.on('upgrade', (request, socket, head) => {
+        const pathname = new URL(request.url, `http://${request.headers.host}`).pathname;
+        console.log(`[WS-UPGRADE] Upgrade request for path: ${pathname}`);
+
+        if (pathname === '/ws') {
+            wss.handleUpgrade(request, socket, head, (ws) => {
+                console.log('[WS-UPGRADE] Upgrade successful, emitting connection');
+                wss.emit('connection', ws, request);
+            });
+        } else {
+            console.log(`[WS-UPGRADE] Rejecting upgrade for path: ${pathname}`);
+            socket.destroy();
+        }
+    });
 
     wss.on('connection', (ws, req) => {
         const clientIp = req.socket.remoteAddress;

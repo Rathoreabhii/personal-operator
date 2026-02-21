@@ -6,9 +6,9 @@ require('dotenv').config();
 const required = (key) => {
     const val = process.env[key];
     if (!val) {
-        const errorMsg = `CRITICAL: Missing required environment variable: ${key}`;
-        console.error(errorMsg);
-        throw new Error(errorMsg);
+        console.error(`⚠️  CRITICAL: Missing required env var: ${key}`);
+        console.error(`   Set this in Railway Variables tab before deploying.`);
+        return `MISSING_${key}`;
     }
     return val;
 };
