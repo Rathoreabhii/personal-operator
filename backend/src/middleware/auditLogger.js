@@ -7,30 +7,8 @@ const { v4: uuidv4 } = require('uuid');
 
 const logsDir = path.join(__dirname, '..', '..', 'logs');
 
-const logger = winston.createLogger({
-    level: 'info',
-    format: winston.format.combine(
-        winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
-        winston.format.json()
-    ),
-    defaultMeta: { service: 'personal-operator' },
-    transports: [
-        new winston.transports.File({
-            filename: path.join(logsDir, 'audit.log'),
-            maxsize: 10 * 1024 * 1024, // 10 MB
-            maxFiles: 10,
-        }),
-        new winston.transports.File({
-            filename: path.join(logsDir, 'error.log'),
-            level: 'error',
-            maxsize: 5 * 1024 * 1024,
-            maxFiles: 5,
-        }),
-    ],
-});
-
-// Console output — ALWAYS enabled so Railway deploy logs show everything
-logger.add(
+const transports = [
+    // Console output — ALWAYS enabled so Railway deploy logs show everything
     new winston.transports.Console({
         format: winston.format.combine(
             winston.format.colorize(),
@@ -39,8 +17,37 @@ logger.add(
                 return `${timestamp} [${level}] ${message}${metaStr}`;
             })
         ),
-    })
-);
+    }),
+];
+
+// File logging — ONLY for development/test to avoid Railway permission errors
+if (process.env.NODE_ENV !== 'production') {
+    transports.push(
+        new winston.transports.File({
+            filename: path.join(logsDir, 'audit.log'),
+            maxsize: 10 * 1024 * 1024,
+            maxFiles: 10,
+        }),
+        new winston.transports.File({
+            filename: path.join(logsDir, 'error.log'),
+            level: 'error',
+            maxsize: 5 * 1024 * 1024,
+            maxFiles: 5,
+        })
+    );
+}
+
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(
+        winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
+        winston.format.json()
+    ),
+    defaultMeta: { service: 'personal-operator' },
+    transports,
+});
+
+
 
 /**
  * Log an auditable action.

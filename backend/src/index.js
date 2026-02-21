@@ -1,21 +1,20 @@
-// ─── Entry Point ───────────────────────────────────────────────────
-// Initializes Express server, mounts middleware, routes, and WebSocket.
+const fs = require('fs');
+const path = require('path');
+
+// ─── Pre-flight Setup ────────────────────────────────────────────────
+// Ensure directories exist BEFORE loading any other modules (logger depends on logs/)
+const logsDir = path.join(__dirname, '..', 'logs');
+if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
+}
 
 const http = require('http');
 const express = require('express');
-const path = require('path');
-const fs = require('fs');
 const config = require('./config');
 const { securityMiddleware } = require('./middleware/security');
 const { requestLogger, logger } = require('./middleware/auditLogger');
 const apiRoutes = require('./routes/api');
 const { initWebSocket } = require('./websocket/gateway');
-
-// Ensure logs directory exists
-const logsDir = path.join(__dirname, '..', 'logs');
-if (!fs.existsSync(logsDir)) {
-    fs.mkdirSync(logsDir, { recursive: true });
-}
 
 const app = express();
 
