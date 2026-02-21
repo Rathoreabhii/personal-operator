@@ -22,16 +22,24 @@ function initWebSocket(server) {
 
     // Manually handle the HTTP upgrade event for /ws path
     server.on('upgrade', (request, socket, head) => {
-        const pathname = new URL(request.url, `http://${request.headers.host}`).pathname;
-        console.log(`[WS-UPGRADE] Upgrade request for path: ${pathname}`);
+        try {
+            const { pathname } = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
+            const ip = request.socket.remoteAddress;
+            const ua = request.headers['user-agent'] || 'unknown';
 
-        if (pathname === '/ws') {
-            wss.handleUpgrade(request, socket, head, (ws) => {
-                console.log('[WS-UPGRADE] Upgrade successful, emitting connection');
-                wss.emit('connection', ws, request);
-            });
-        } else {
-            console.log(`[WS-UPGRADE] Rejecting upgrade for path: ${pathname}`);
+            console.log(`[WS-UPGRADE] Request for ${pathname} from ${ip} (${ua})`);
+
+            if (pathname === '/ws') {
+                wss.handleUpgrade(request, socket, head, (ws) => {
+                    console.log(`[WS-UPGRADE] Successful upgrade for ${ip}`);
+                    wss.emit('connection', ws, request);
+                });
+            } else {
+                console.warn(`[WS-UPGRADE] Rejected path: ${pathname} from ${ip}`);
+                socket.destroy();
+            }
+        } catch (err) {
+            console.error('[WS-UPGRADE] CRITICAL ERROR during upgrade handling:', err);
             socket.destroy();
         }
     });

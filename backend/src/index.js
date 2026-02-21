@@ -19,6 +19,20 @@ if (!fs.existsSync(logsDir)) {
 
 const app = express();
 
+// ─── Health check (root) — Move to top for highest priority ──
+app.get('/health', (_req, res) => {
+    console.log('[HEALTH] Ping received');
+    res.json({ status: 'ok', root: true, timestamp: new Date().toISOString() });
+});
+
+app.get('/', (_req, res) => {
+    res.json({
+        service: 'Personal Operator Backend',
+        version: '1.0.1',
+        status: 'running',
+    });
+});
+
 // ── Body parsing ──
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -32,29 +46,7 @@ app.use(requestLogger);
 // ── API routes ──
 app.use('/api', apiRoutes);
 
-// ─── Health check (root) ──
-app.get('/health', (_req, res) => {
-    console.log('Health check ping received at /health');
-    res.json({ status: 'ok', root: true, timestamp: new Date().toISOString() });
-});
 
-// ─── Root ──
-app.get('/', (_req, res) => {
-    res.json({
-        service: 'Personal Operator Backend',
-        version: '1.0.0',
-        status: 'running',
-        endpoints: {
-            health: 'GET /api/health',
-            processMessage: 'POST /api/process-message',
-            executeAction: 'POST /api/execute-action',
-            initiateCall: 'POST /api/call/initiate',
-            callSummary: 'GET /api/call/:id/summary',
-            summarizeCall: 'POST /api/call/:id/summarize',
-            websocket: 'WS /ws',
-        },
-    });
-});
 
 // ── WebSocket info (for non-upgrade GET requests to /ws) ──
 app.get('/ws', (_req, res) => {
@@ -107,13 +99,15 @@ try {
     console.error('CRITICAL: WebSocket initialization failed', err);
 }
 
-console.log(`[DEBUG] Starting server on port: ${config.port}`);
+console.log(`[DEBUG] Attempting to start server on port: ${config.port} (host: 0.0.0.0)`);
 try {
-    server.listen(config.port, () => {
-        console.log('[DEBUG] Server bind successful - Callback fired');
-        logger.info(`Server listening on port ${config.port}`);
+    server.listen(config.port, '0.0.0.0', () => {
+        console.log('[DEBUG] server.listen callback fired');
+        const addr = server.address();
+        const bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
+        logger.info(`Server listening on ${bind}`);
         logger.info(`Environment: ${config.nodeEnv}`);
-        logger.info(`WebSocket ready at ws://localhost:${config.port}/ws`);
+        logger.info(`WebSocket ready at ws://0.0.0.0:${config.port}/ws`);
     });
 } catch (error) {
     console.error('[FATAL] Failed to start server:', error);
